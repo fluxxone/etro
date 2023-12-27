@@ -1,72 +1,68 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Text in Etro</title>
   <script src="../../dist/etro-iife.js"></script>
+  <audio id="layer1" src="../assets/audio.mp4"></audio>
 </head>
+
 <body>
   <script>
     let movie
     window.addEventListener('load', () => {
       const canvas = document.createElement('canvas')
-      canvas.width = 1280
-      canvas.height = 720
+      canvas.width = 720
+      canvas.height = 1280
       document.body.appendChild(canvas)
 
       initMovie(canvas)
     })
 
-    const initMovie = canvas => {
+    const initMovie = async canvas => {
+      const audio1 = document.getElementById('layer1')
+      const layer1 = new etro.layer.Audio({ startTime: 0, source: audio1 })
+      const dur = layer1.duration
+      console.log('PERA duration:', dur)
+
       movie = new etro.Movie({ canvas })
-      movie.addLayer(new etro.layer.Text({
-        textY: 140 * 0,
-        startTime: 0,
-        duration: 4,
-        text: 'Simple Text',
-        font: '140px sans-serif',
-        color: 'white'
-  }))
-      movie.addLayer(new etro.layer.Text({
-        textY: 140 * 1,
-        startTime: 0,
-        duration: 4,
-        text: 'Outer Stroke Text',
-        font: '140px sans-serif',
-        color: 'white',
-        textStroke: {
-          color: 'green',
-          thickness: 5,
-          position: etro.layer.TextStrokePosition.Outside
-        }
-      }))
-      movie.addLayer(new etro.layer.Text({
-        textY: 140 * 2,
-        startTime: 0,
-        duration: 4,
-        text: 'Center Stroke Text',
-        font: '140px sans-serif',
-        color: 'white',
-        textStroke: {
-          color: 'green',
-          thickness: 5,
-          position: etro.layer.TextStrokePosition.Center
-        }
-      }))
-      movie.addLayer(new etro.layer.Text({
-        textY: 140 * 3,
-        startTime: 0,
-        duration: 4,
-        text: 'Inner Stroke Text',
-        font: '140px sans-serif',
-        color: 'white',
-        textStroke: {
-          color: 'green',
-          thickness: 5,
-          position: etro.layer.TextStrokePosition.Inside
-        }
-      }))
+      movie.addLayer(layer1)
+
+      let summary = ''
+
+      await fetch('../assets/summary.json')
+        .then(function (response) {
+          return response.json()
+        })
+        .then(function (myJson) {
+          summary = myJson
+        })
+
+      console.log(summary)
+
+      const frameDur = dur / summary.length
+
+      for (const i in summary) {
+        console.log('Bullet:', summary[i])
+        movie.addLayer(new etro.layer.Text({
+          textY: 1280 / 2,
+          startTime: i * frameDur,
+          duration: frameDur,
+          text: summary[i],
+          maxWidth: 720,
+          font: '30px sans-serif',
+          color: 'white',
+          textStroke: {
+            color: 'black',
+            thickness: 5,
+            position: etro.layer.TextStrokePosition.Outside
+          }
+        }))
+      }
+
       movie.play()
     }
   </script>
 </body>
+
 </html>
